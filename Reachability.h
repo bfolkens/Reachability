@@ -38,17 +38,31 @@
 /**
  * Does ARC support support GCD objects?
  * It does if the minimum deployment target is iOS 6+ or Mac OS X 8+
- * 
- * @see http://opensource.apple.com/source/libdispatch/libdispatch-228.18/os/object.h
  **/
-#if OS_OBJECT_USE_OBJC
+#if TARGET_OS_IPHONE
+
+// Compiling for iOS
+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= 60000 // iOS 6.0 or later
 #define NEEDS_DISPATCH_RETAIN_RELEASE 0
-#else
+#else                                         // iOS 5.X or earlier
 #define NEEDS_DISPATCH_RETAIN_RELEASE 1
 #endif
 
+#else
 
-extern NSString *const kReachabilityChangedNotification;
+// Compiling for Mac OS X
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1080     // Mac OS X 10.8 or later
+#define NEEDS_DISPATCH_RETAIN_RELEASE 0
+#else
+#define NEEDS_DISPATCH_RETAIN_RELEASE 1     // Mac OS X 10.7 or earlier
+#endif
+
+#endif
+
+
+extern NSString *const kTMReachabilityChangedNotification;
 
 typedef enum 
 {
@@ -58,12 +72,12 @@ typedef enum
 	ReachableViaWWAN = 1
 } NetworkStatus;
 
-@class Reachability;
+@class TMReachability;
 
-typedef void (^NetworkReachable)(Reachability * reachability);
-typedef void (^NetworkUnreachable)(Reachability * reachability);
+typedef void (^NetworkReachable)(TMReachability * reachability);
+typedef void (^NetworkUnreachable)(TMReachability * reachability);
 
-@interface Reachability : NSObject
+@interface TMReachability : NSObject
 
 @property (nonatomic, copy) NetworkReachable    reachableBlock;
 @property (nonatomic, copy) NetworkUnreachable  unreachableBlock;
@@ -71,12 +85,12 @@ typedef void (^NetworkUnreachable)(Reachability * reachability);
 
 @property (nonatomic, assign) BOOL reachableOnWWAN;
 
-+(Reachability*)reachabilityWithHostname:(NSString*)hostname;
-+(Reachability*)reachabilityForInternetConnection;
-+(Reachability*)reachabilityWithAddress:(const struct sockaddr_in*)hostAddress;
-+(Reachability*)reachabilityForLocalWiFi;
++(TMReachability*)reachabilityWithHostname:(NSString*)hostname;
++(TMReachability*)reachabilityForInternetConnection;
++(TMReachability*)reachabilityWithAddress:(const struct sockaddr_in*)hostAddress;
++(TMReachability*)reachabilityForLocalWiFi;
 
--(Reachability *)initWithReachabilityRef:(SCNetworkReachabilityRef)ref;
+-(TMReachability *)initWithReachabilityRef:(SCNetworkReachabilityRef)ref;
 
 -(BOOL)startNotifier;
 -(void)stopNotifier;
